@@ -1,0 +1,196 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: #f0f2f5;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 2rem 1rem;
+}
+.container {
+    width: 100%;
+    max-width: 600px;
+}
+h1 {
+    text-align: center;
+    color: #1a1a2e;
+    margin-bottom: 1.5rem;
+    font-size: 1.75rem;
+}
+.form-card, .list-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    margin-bottom: 1rem;
+}
+.form-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+.form-row input[type="text"] {
+    flex: 1;
+    padding: 0.65rem 0.75rem;
+    border: 1.5px solid #ddd;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border 0.2s;
+}
+.form-row input[type="text"]:focus {
+    border-color: #4a6cf7;
+}
+.form-row input[type="datetime-local"] {
+    padding: 0.65rem 0.75rem;
+    border: 1.5px solid #ddd;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border 0.2s;
+    min-width: 200px;
+}
+.form-row input[type="datetime-local"]:focus {
+    border-color: #4a6cf7;
+}
+.btn {
+    padding: 0.65rem 1.25rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    font-weight: 500;
+    transition: opacity 0.2s;
+}
+.btn:hover { opacity: 0.85; }
+.btn-primary {
+    background: #4a6cf7;
+    color: white;
+}
+.btn-danger {
+    background: #e74c3c;
+    color: white;
+}
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+.btn-sm {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.8rem;
+}
+.empty-state {
+    text-align: center;
+    color: #999;
+    padding: 2rem 0;
+}
+.task-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid #eee;
+}
+.task-item:last-child { border-bottom: none; }
+.task-item input[type="checkbox"] {
+    width: 1.2rem;
+    height: 1.2rem;
+    cursor: pointer;
+    accent-color: #4a6cf7;
+    flex-shrink: 0;
+}
+.task-content {
+    flex: 1;
+    min-width: 0;
+}
+.task-text {
+    font-size: 0.95rem;
+    color: #333;
+    word-break: break-word;
+}
+.task-text.done {
+    text-decoration: line-through;
+    color: #aaa;
+}
+.task-time {
+    font-size: 0.75rem;
+    color: #888;
+    margin-top: 2px;
+}
+.task-time.overdue {
+    color: #e74c3c;
+    font-weight: 500;
+}
+.task-actions {
+    display: flex;
+    gap: 0.4rem;
+    flex-shrink: 0;
+}
+.task-stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+    color: #666;
+}
+.btn-clear {
+    background: none;
+    border: none;
+    color: #e74c3c;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+.btn-clear:hover { text-decoration: underline; }
+.toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    z-index: 100;
+}
+.toast.show { opacity: 1; }
+.reminder-badge {
+    background: #4a6cf7;
+    color: white;
+    font-size: 0.7rem;
+    padding: 1px 6px;
+    border-radius: 10px;
+    margin-left: 6px;
+}
+.tab-bar {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+.tab-bar .tab {
+    padding: 0.5rem 1rem;
+    border: 1.5px solid #ddd;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+}
+.tab-bar .tab.active {
+    background: #4a6cf7;
+    color: white;
+    border-color: #4a6cf7;
+}
+.tab-bar .tab:hover:not(.active) {
+    border-color: #4a6cf7;
+}
+@media (max-width: 480px) {
+    .form-row { flex-direction: column; }
+    .form-row input[type="datetime-local"] { min-width: unset; }
+}
