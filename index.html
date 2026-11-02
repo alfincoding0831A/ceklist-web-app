@@ -12,10 +12,10 @@
 
         <div class="form-card">
             <div class="form-row">
-                <input type="text" id="taskInput" placeholder="Nama kegiatan..." autofocus>
+                <input type="text" id="taskInput" placeholder="Nama kegiatan..." aria-required="true" autofocus>
             </div>
             <div class="form-row">
-                <input type="datetime-local" id="reminderInput">
+                <input type="datetime-local" id="reminderInput" aria-required="true" required>
                 <button class="btn btn-primary" id="addBtn">Tambah</button>
             </div>
         </div>
@@ -45,11 +45,21 @@
         const clearDoneBtn = document.getElementById('clearDoneBtn');
         const toast = document.getElementById('toast');
 
-        let tasks = JSON.parse(localStorage.getItem('ceklist_tasks') || '[]');
+        let tasks = [];
+        try {
+            tasks = JSON.parse(localStorage.getItem('ceklist_tasks')) || [];
+        } catch {
+            tasks = [];
+        }
+        if (!Array.isArray(tasks)) tasks = [];
         let filter = 'all';
 
         function save() {
-            localStorage.setItem('ceklist_tasks', JSON.stringify(tasks));
+            try {
+                localStorage.setItem('ceklist_tasks', JSON.stringify(tasks));
+            } catch {
+                showToast('Gagal menyimpan data. Periksa pengaturan penyimpanan browser.');
+            }
         }
 
         function showToast(msg) {
@@ -63,6 +73,11 @@
                 if (filter === 'active') return !t.done;
                 if (filter === 'done') return t.done;
                 return true;
+            }).sort((a, b) => {
+                if (!a.reminder && !b.reminder) return 0;
+                if (!a.reminder) return 1;
+                if (!b.reminder) return -1;
+                return new Date(a.reminder) - new Date(b.reminder);
             });
 
             if (filtered.length === 0) {
@@ -73,7 +88,7 @@
                     const isOverdue = t.reminder && !t.done && new Date(t.reminder) < new Date();
                     return `
                         <div class="task-item" data-id="${t.id}">
-                            <input type="checkbox" ${t.done ? 'checked' : ''}>
+                            <input type="checkbox" ${t.done ? 'checked' : ''} aria-label="Tandai kegiatan selesai">
                             <div class="task-content">
                                 <div class="task-text ${t.done ? 'done' : ''}">${escapeHtml(t.text)}</div>
                                 ${timeStr ? `<div class="task-time ${isOverdue ? 'overdue' : ''}">&#9200; ${timeStr}</div>` : ''}
@@ -91,7 +106,9 @@
             statsText.textContent = `${done}/${total} selesai`;
 
             document.querySelectorAll('.tab').forEach(el => {
-                el.classList.toggle('active', el.dataset.filter === filter);
+                const isActive = el.dataset.filter === filter;
+                el.classList.toggle('active', isActive);
+                el.setAttribute('aria-pressed', isActive);
             });
         }
 
@@ -120,17 +137,15 @@
         }
 
         function checkReminders() {
-            const now = new Date().getTime();
+            const now = Date.now();
             tasks.forEach(t => {
                 if (t.reminder && !t.done && !t.notified) {
                     const remTime = new Date(t.reminder).getTime();
-                    if (remTime <= now && remTime > now - 60000) {
+                    if (remTime <= now && remTime > now - 3600000) {
                         t.notified = true;
                         save();
                         if ('Notification' in window && Notification.permission === 'granted') {
-                            new Notification('Pengingat Kegiatan', {
-                                body: `Waktunya: ${t.text}`,
-                            });
+                            new Notification('Pengingat Kegiatan', { body: `Waktunya: ${t.text}` });
                         } else {
                             showToast(`Pengingat: ${t.text}`);
                         }
@@ -146,10 +161,21 @@
                 return;
             }
 
+            const reminder = reminderInput.value;
+            if (!reminder) {
+                showToast('Waktu pengingat harus diisi');
+                reminderInput.focus();
+                return;
+            }
+
+            requestPermission();
+
             tasks.push({
-                id: Date.now(),
+                id: (typeof crypto !== 'undefined' && crypto.randomUUID)
+                    ? crypto.randomUUID()
+                    : Date.now().toString(36) + Math.random().toString(36).slice(2),
                 text,
-                reminder: reminderInput.value || null,
+                reminder,
                 done: false,
                 notified: false,
                 createdAt: new Date().toISOString(),
@@ -163,7 +189,7 @@
         }
 
         function toggleTask(id) {
-            const t = tasks.find(t => t.id === id);
+            const t = tasks.find(t => String(t.id) === id);
             if (t) {
                 t.done = !t.done;
                 if (t.done) showToast(`"${t.text}" selesai!`);
@@ -173,7 +199,7 @@
         }
 
         function deleteTask(id) {
-            tasks = tasks.filter(t => t.id !== id);
+            tasks = tasks.filter(t => String(t.id) !== id);
             save();
             render();
             showToast('Kegiatan dihapus');
@@ -190,12 +216,27 @@
         }
 
         addBtn.addEventListener('click', addTask);
-        taskInput.addEventListener('keydown', e => { if (e.key === 'Enter') addTask(); });
+        taskInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                if (!taskInput.value.trim()) {
+                    showToast('Nama kegiatan tidak boleh kosong');
+                    return;
+                }
+                reminderInput.focus();
+            }
+        });
+        reminderInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addTask();
+            }
+        });
 
         taskList.addEventListener('click', e => {
             const item = e.target.closest('.task-item');
             if (!item) return;
-            const id = Number(item.dataset.id);
+            const id = item.dataset.id;
 
             if (e.target.type === 'checkbox') {
                 toggleTask(id);
@@ -213,7 +254,6 @@
 
         clearDoneBtn.addEventListener('click', clearDone);
 
-        requestPermission();
         render();
         checkReminders();
         setInterval(checkReminders, 10000);
